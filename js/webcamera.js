@@ -26,25 +26,34 @@ class WebCamera {
 
     async startCamera(deviceId = null) {
 
-        if (this.stream) { this.stream.getTracks().forEach(track => track.stop()); }
+        if (this.stream) { 
+            this.stream.getTracks().forEach(track => track.stop()); 
+        }
 
         const constraints = {
-            video: deviceId
-                ? { deviceId: { exact: deviceId } }
-                : { facingMode: "user" }
+            video: deviceId ? { 
+                deviceId: { exact: deviceId } 
+            } : { 
+                facingMode: "user",
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                frameRate: { ideal: 30, max: 30 }
+            }
         };
 
-        // this.stream = await navigator.mediaDevices.getUserMedia(constraints);
-        this.stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-                width: 640,
-                height: 480,
-                frameRate: { ideal: 30, max: 30 },
-                facingMode: "user"
-            }
-        });
-        this.video.srcObject = this.stream;
-        await this.video.play();
+        try {
+            this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+            this.video.srcObject = this.stream;
+            await this.video.play();
+        } catch (err) {
+            console.warn("No se pudo iniciar con la resolución ideal, intentando modo básico...", err);
+            // Fallback por si el dispositivo no soporta la resolución solicitada
+            this.stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: "user" }
+            });
+            this.video.srcObject = this.stream;
+            await this.video.play();
+        }
     }
 
     async getCameras() {
@@ -52,7 +61,9 @@ class WebCamera {
         return devices.filter(d => d.kind === "videoinput");
     }
 
-    async changeCamera(deviceId) { await this.startCamera(deviceId); }
+    async changeCamera(deviceId) { 
+        await this.startCamera(deviceId); 
+    }
 }
 
 export { WebCamera };
