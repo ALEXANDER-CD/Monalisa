@@ -113,8 +113,6 @@ class MindARController {
             await this.mindar.start();
             
             // --- CORRECCIÓN DE ZOOM FORZADO DE MINDAR ---
-            // MindAR inyecta estilos propios al video que provocan el zoom. 
-            // Aquí lo interceptamos y forzamos un ajuste limpio para pantalla completa sin distorsión.
             const videoEl = this.container.querySelector('video');
             if (videoEl) {
                 videoEl.style.position = 'absolute';
@@ -123,7 +121,7 @@ class MindARController {
                 videoEl.style.transform = 'translate(-50%, -50%)';
                 videoEl.style.width = '100vw';
                 videoEl.style.height = '100vh';
-                videoEl.style.objectFit = 'cover'; // Si persiste el zoom, puedes probar cambiando temporalmente a 'contain'
+                videoEl.style.objectFit = 'cover';
                 videoEl.style.zIndex = '-2';
             }
             // ---------------------------------------------
