@@ -55,21 +55,27 @@ class MindARController {
             
             console.log("Cámaras detectadas en el dispositivo:", videoDevices);
 
-            // Buscamos explícitamente una cámara que tenga pinta de ser frontal o la primera disponible
-            // En tu listado se identificaba como "facing front"
-            const frontCamera = videoDevices.find(d => 
-                d.label.toLowerCase().includes('front') || 
-                d.label.toLowerCase().includes('frontal') ||
-                d.label.toLowerCase().includes('user')
-            );
+            const targetCamera = videoDevices.find(d =>
+    d.label.toLowerCase().includes('camera 2') &&
+    d.label.toLowerCase().includes('back')
+);
 
-            if (frontCamera) {
-                selectedDeviceId = frontCamera.deviceId;
-                console.log("Cámara frontal seleccionada por etiqueta:", frontCamera.label);
-            } else if (videoDevices.length > 0) {
-                // Fallback a la primera de la lista si no encuentra la etiqueta exacta
-                selectedDeviceId = videoDevices[0].deviceId;
-            }
+if (targetCamera) {
+    selectedDeviceId = targetCamera.deviceId;
+    console.log("Cámara AR seleccionada:", targetCamera.label);
+} else {
+    console.warn("No se encontró Camera 2. Se usará la cámara trasera disponible.");
+
+    const backCamera = videoDevices.find(d =>
+        d.label.toLowerCase().includes('back') ||
+        d.label.toLowerCase().includes('rear')
+    );
+
+    if (backCamera) {
+        selectedDeviceId = backCamera.deviceId;
+    }
+}
+            
         } catch (err) {
             console.warn("No se pudo enumerar los dispositivos, usando configuración por defecto", err);
         }
