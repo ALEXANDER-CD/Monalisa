@@ -58,6 +58,12 @@ class MindARController {
             uiLoading: 'no',
             uiScanning: 'no',
             uiError: 'yes',
+            // Restricciones de video añadidas para evitar el zoom excesivo en dispositivos móviles y PC
+            videoSettings: {
+                facingMode: 'user',
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            }
         });
 
         const { scene, camera, renderer } = this.mindar;
