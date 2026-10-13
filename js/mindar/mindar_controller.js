@@ -37,7 +37,6 @@ class MindARController {
 
         if (this.started) return;
 
-        // Limpia restos de un intento anterior (p.ej. un <video> huérfano).
         if (this.mindar) { this.stop(); }
         this.container.replaceChildren();
 
@@ -58,17 +57,15 @@ class MindARController {
             uiLoading: 'no',
             uiScanning: 'no',
             uiError: 'yes',
-            // Restricciones de video añadidas para evitar el zoom excesivo en dispositivos móviles y PC
             videoSettings: {
                 facingMode: 'user',
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
+                width: { ideal: 1920 },
+                height: { ideal: 1080 }
             }
         });
 
         const { scene, camera, renderer } = this.mindar;
 
-        // Anchora el contenido AR de cada ImageTarget sobre el target.
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setClearColor(0x000000, 0);
 
@@ -78,14 +75,8 @@ class MindARController {
 
             const content = it.arContent;
             if (content) {
-                // El contenido se diseñó en el editor con el marcador en el suelo
-                // (el "up" del editor es +Y). En MindAR el plano del target es XY
-                // y +Z apunta hacia la cámara, así que rotamos +90° en X para que
-                // el contenido quede en pie sobre el marcador. 1 unidad MindAR =
-                // ancho del marcador (= 1.65 en el editor), por eso 1/1.65 ≈ 0.6.
                 content.scale.setScalar(0.6);
                 content.rotation.set(THREE.MathUtils.degToRad(90), 0, 0);
-
                 anchor.group.add(content);
             }
 
@@ -114,13 +105,29 @@ class MindARController {
         this.copyLights(scene, player);
         this.copyRendererSettings(renderer, player);
 
-        // El player sigue corriendo (events update/audio) pero deja de pintar.
         if (player?.setRenderEnabled) player.setRenderEnabled(false);
 
         this.bindClickEvents();
 
         try {
             await this.mindar.start();
+            
+            // --- CORRECCIÓN DE ZOOM FORZADO DE MINDAR ---
+            // MindAR inyecta estilos propios al video que provocan el zoom. 
+            // Aquí lo interceptamos y forzamos un ajuste limpio para pantalla completa sin distorsión.
+            const videoEl = this.container.querySelector('video');
+            if (videoEl) {
+                videoEl.style.position = 'absolute';
+                videoEl.style.top = '50%';
+                videoEl.style.left = '50%';
+                videoEl.style.transform = 'translate(-50%, -50%)';
+                videoEl.style.width = '100vw';
+                videoEl.style.height = '100vh';
+                videoEl.style.objectFit = 'cover'; // Si persiste el zoom, puedes probar cambiando temporalmente a 'contain'
+                videoEl.style.zIndex = '-2';
+            }
+            // ---------------------------------------------
+
         } catch (e) {
             this.mindar = null;
             this.started = false;
