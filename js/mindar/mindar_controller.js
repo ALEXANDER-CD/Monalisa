@@ -58,6 +58,18 @@ class MindARController {
             );
         }
 
+        const cameras = await navigator.mediaDevices.enumerateDevices();
+
+console.table(
+    cameras
+        .filter(device => device.kind === 'videoinput')
+        .map((device, index) => ({
+            numero: index,
+            nombre: device.label,
+            id: device.deviceId
+        }))
+);
+
         this.mindar = new MindARThree({
             container: this.container,
             imageTargetSrc: this.imageTargetSrc,
