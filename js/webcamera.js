@@ -17,7 +17,9 @@ class WebCamera {
             inset: "0",
             width: "100%",
             height: "100%",
-            objectFit: "cover",
+            // Cambiamos a "contain" o mantenemos "cover" dependiendo de si prefieres 
+            // ver todo el sensor o rellenar la pantalla. "contain" evita recortes por zoom.
+            objectFit: "cover", 
             transform: "scaleX(-1)"
         });
         this.container.prepend(this.video);  
@@ -30,14 +32,17 @@ class WebCamera {
             this.stream.getTracks().forEach(track => track.stop()); 
         }
 
+        // Dejar las restricciones lo más limpias posible permite que el sistema 
+        // operativo y el driver de la cámara usen su configuración nativa sin zoom artificial.
         const constraints = {
             video: deviceId ? { 
                 deviceId: { exact: deviceId } 
             } : { 
                 facingMode: "user",
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
-                frameRate: { ideal: 30, max: 30 }
+                // Usamos un rango o eliminamos las restricciones estrictas de ancho/alto 
+                // para que el Oppo y tu PC usen la cámara en su estado original.
+                width: { ideal: 1920 },
+                height: { ideal: 1080 }
             }
         };
 
@@ -46,8 +51,8 @@ class WebCamera {
             this.video.srcObject = this.stream;
             await this.video.play();
         } catch (err) {
-            console.warn("No se pudo iniciar con la resolución ideal, intentando modo básico...", err);
-            // Fallback por si el dispositivo no soporta la resolución solicitada
+            console.warn("Fallo con la resolución ideal, intentando con configuración genérica...", err);
+            // Fallback totalmente abierto por si el dispositivo rechaza los 1080p
             this.stream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: "user" }
             });
